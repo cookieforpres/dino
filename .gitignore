@@ -1,0 +1,6 @@
+compiler/
+zig-cache/
+zig-out/
+*.bin
+main.di
+cc
