@@ -41,6 +41,9 @@ pub const Opcode = enum {
     CALL,
     RET,
 
+    STR,
+    LOD,
+
     INVALID,
 
     pub fn from_u8(v: u8) Opcode {
@@ -86,6 +89,9 @@ pub const Opcode = enum {
 
             0x70 => .CALL,
             0x71 => .RET,
+
+            0x80 => .STR,
+            0x81 => .LOD,
 
             else => .INVALID,
         };
@@ -134,6 +140,9 @@ pub const Opcode = enum {
 
             .CALL => 0x70,
             .RET => 0x71,
+
+            .STR => 0x80,
+            .LOD => 0x81,
 
             else => 0xFF,
         };

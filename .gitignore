@@ -1,7 +1,6 @@
-compiler/
 zig-cache/
 zig-out/
 .vscode/
 *.bin
-main.di
+main.dino
 cc

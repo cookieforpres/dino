@@ -1,9 +1,10 @@
 const std = @import("std");
 const Opcode = @import("opcode.zig").Opcode;
 
-pub const PROGRAM_CAPACITY: usize = 1024;
-pub const REGISTER_CAPACITY: usize = 8;
-pub const STACK_CAPACITY: usize = 32;
+pub const REGISTER_CAPACITY: usize = 16;
+pub const STACK_CAPACITY: usize = 4096;
+pub const MEMORY_CAPACITY: usize = 4096;
+pub const PROGRAM_CAPACITY: usize = 4096;
 
 pub const Flags = struct {
     eq: bool,
@@ -16,20 +17,23 @@ pub const VM = struct {
     ip: usize = 0,
     sp: usize = 0,
 
-    program: [PROGRAM_CAPACITY]u8,
     registers: [REGISTER_CAPACITY]u16,
     stack: [STACK_CAPACITY]u16,
+    memory: [MEMORY_CAPACITY]u16,
+    program: [PROGRAM_CAPACITY]u8,
     flags: Flags,
 
     pub fn init() !Self {
-        var program = std.mem.zeroes([PROGRAM_CAPACITY]u8);
         var registers = std.mem.zeroes([REGISTER_CAPACITY]u16);
         var stack = std.mem.zeroes([STACK_CAPACITY]u16);
+        var memory = std.mem.zeroes([MEMORY_CAPACITY]u16);
+        var program = std.mem.zeroes([PROGRAM_CAPACITY]u8);
 
         return Self{
-            .program = program,
             .registers = registers,
             .stack = stack,
+            .memory = memory,
+            .program = program,
             .flags = .{ .eq = false, .gt = false },
         };
     }
@@ -51,6 +55,7 @@ pub const VM = struct {
 
             // std.debug.print("registers: {any}\n", .{self.registers});
             // std.debug.print("stack:     {any}\n", .{self.stack});
+            // std.debug.print("memory:    {any}\n", .{self.memory});
             // std.debug.print("flags:     {any}\n", .{self.flags});
             // std.debug.print("ip:        {}\n", .{self.ip});
             // std.debug.print("sp:        {}\n", .{self.sp});
@@ -351,6 +356,21 @@ pub const VM = struct {
                     self.sp -= 1;
                     var addr = self.stack[self.sp];
                     self.ip = addr;
+                },
+                .STR => {
+                    self.ip += 1;
+                    var addr = self.read_number();
+                    var imm = self.read_number();
+
+                    self.memory[addr] = imm;
+                },
+                .LOD => {
+                    self.ip += 1;
+                    var reg = self.program[self.ip];
+                    self.ip += 1;
+                    var addr = self.read_number();
+
+                    self.registers[reg] = self.memory[addr];
                 },
                 else => {
                     std.debug.print("invalid instruction `{}`\n", .{self.program[self.ip]});
